@@ -5,10 +5,12 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 
-from .models import Article
+from .models import Article, Comment
 from .serializers import (
     ArticleListSerializer,
-    ArticleSeriailizer
+    ArticleSeriailizer,
+    CommentListSerializer,
+    CommentSerializer
 )
 
 # DRF : method를 구분하는 데코레이터 필수!!!
@@ -59,3 +61,47 @@ def article_detail_delete_update(request, article_pk):
             # default 200
             return Response(serializer.data)
 
+
+@api_view(['GET'])
+def comment_list(request):
+    if request.method == 'GET':
+        comments = get_list_or_404(Comment)
+        serializer = CommentListSerializer(comments, many=True)
+        return Response(serializer.data)
+    # elif request.method == 'POST':
+    #     article = get_object_or_404(Article, pk=request.data.get('article_pk'))
+    #     serializer = CommentSerializer(data=request.data)
+    #     if serializer.is_valid(raise_exception=True):
+    #         # article과 연결해주기!
+    #         serializer.save(article=article)
+    #         return Response(serializer.data)
+
+@api_view(['GET', 'DELETE', 'PUT'])
+def comment_detail_delete_update(request, comment_pk):
+    comment = get_object_or_404(Comment, pk=comment_pk)
+    if request.method == 'GET':
+        serializer = CommentSerializer(comment)
+        return Response(serializer.data)
+    elif request.method == 'DELETE':
+        comment.delete()
+        data = {
+            'message': f'{comment_pk}번 댓글이 삭제되었습니다.'
+        }
+        return Response(data, status.HTTP_204_NO_CONTENT)
+    elif request.method == 'PUT':
+        serializer = CommentSerializer(comment, data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.data)
+    
+    
+
+@api_view(['POST'])
+def comment_create(request, article_pk):
+    if request.method == 'POST':
+        article = get_object_or_404(Article, pk=article_pk)
+        serializer = CommentSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            # article과 연결해주기!
+            serializer.save(article=article)
+            return Response(serializer.data)
