@@ -13,7 +13,12 @@ from .serializers import (
     CommentSerializer
 )
 
+# swagger
+from drf_yasg.utils import swagger_auto_schema
+
+
 # DRF : method를 구분하는 데코레이터 필수!!!
+@swagger_auto_schema(methods=['POST'], request_body=ArticleSeriailizer)
 @api_view(['GET', 'POST'])
 def article_list_create(request):
     if request.method == 'GET':
@@ -41,6 +46,8 @@ def article_list_create(request):
         # 아래 코드가 없으면 500 error => raise_exception=True 사용하면 생략 가능
         # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+@swagger_auto_schema(methods=['PUT'], request_body=ArticleSeriailizer)
 @api_view(['GET', 'DELETE', 'PUT'])
 def article_detail_delete_update(request, article_pk):
     article = get_object_or_404(Article, pk=article_pk)
@@ -76,6 +83,8 @@ def comment_list(request):
     #         serializer.save(article=article)
     #         return Response(serializer.data)
 
+
+@swagger_auto_schema(methods=['PUT'], request_body=CommentSerializer)
 @api_view(['GET', 'DELETE', 'PUT'])
 def comment_detail_delete_update(request, comment_pk):
     comment = get_object_or_404(Comment, pk=comment_pk)
@@ -95,7 +104,7 @@ def comment_detail_delete_update(request, comment_pk):
             return Response(serializer.data)
     
     
-
+@swagger_auto_schema(methods=['POST'], request_body=CommentSerializer)
 @api_view(['POST'])
 def comment_create(request, article_pk):
     if request.method == 'POST':
